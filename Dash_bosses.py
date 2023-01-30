@@ -42,6 +42,7 @@ app.layout = html.Div([
  
 @app.callback( #Atualiza a Output idependente de qualquer coisa
     Output('CharSelected','options'),
+    Output('newChar','value'),
     Input('newChar-buttom', 'n_clicks'),
     State ('newChar', 'value'),
 )
@@ -51,16 +52,16 @@ def update_char(n_clicks, name):
         if str(name) != 'None':
             print (n_clicks, {'label': str(name), 'value': str(name)})
             names.append(name)
-            return names
+            return names, ''
         else:
-            return names
+            return names, ''
     except Exception as e:
         if 'file or directory' in e.args[1]:
             print(f'Char-update: No csv')
             if str(name) !='None':
                 return [name]
             else:
-                return ['New Character']
+                return ['New Character'], ''
         else:
             print(f'Char-update: {e.args}')
 
@@ -74,6 +75,7 @@ def update_nada(options):
 
 @app.callback(
     Output('loot_result', 'children'),
+    Output('Lootlog', 'value'),
     Input('loot-buttom', 'n_clicks'),
     State('Lootlog', 'value'),
     State('CharSelected', 'value'),
@@ -103,11 +105,9 @@ def submit_loot(clicks, lootlog, charSelect):
             },
             data =   loot_show.to_dict('records'),
             columns = [{"name": i, "id": i} for i in looted.columns],
-        )
-    elif clicks > 0:
-        return '{} have looted: \n{} {}x times'.format(charSelect, lootlog, clicks)
-
-
+        ), ''
+    else:
+        return "Today's loot log", ''
 
 if __name__ == '__main__':
     app.run_server(debug=True)
