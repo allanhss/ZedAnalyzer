@@ -15,8 +15,10 @@ def GetLootfBoss(line, char):
             boosted = False
         boss = re.match(RGX_boss_name, log[0])
         dictOfItems = {'Boss': [boss['name']]}
-        dictOfItems.update({'Char':[char]})
-        dictOfItems.update({'Time':[datetime.datetime.now()]})
+        dictOfItems.update({'Char':[char[0]]})
+        dictOfItems.update({'BossPoints':[char[1]]})
+        time = datetime.datetime.now()
+        dictOfItems.update({'Time':[f'{time.day}/{time.month}/{time.year}']})
         dictOfItems.update({'Boosted': [boosted]})
         for items in re.findall(RGX_boss_items, boss['items']):
             dictOfItems.update({

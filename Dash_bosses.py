@@ -4,6 +4,7 @@ import plotly.express as px
 import pandas as pd
 from dash.dependencies import Input, Output, State
 from tibiaRegex import GetLootfBoss
+import datetime
 
 bosslog_csv = r'log\bosslog.csv'
 bosspoints_csv = r'\log\bosspoints.csv'
@@ -79,7 +80,7 @@ def update_nada(options):
 )
 def submit_loot(clicks, lootlog, charSelect):
     if str(lootlog) != 'None':
-        looted = GetLootfBoss(lootlog,charSelect)
+        looted = GetLootfBoss(lootlog,[charSelect, 0 ]) #Corrigir Bosspoints
         try:
             loot = pd.concat ([pd.read_csv(bosslog_csv), looted])
             loot.to_csv(bosslog_csv, index = False)
@@ -89,6 +90,9 @@ def submit_loot(clicks, lootlog, charSelect):
                 print(f'DfToCSV: Done')
             else:
                 print(f'DfToCSV: {e.args}')
+        
+        time = datetime.datetime.now()
+        loot_show = loot[loot['Time'] == f'{time.day}/{time.month}/{time.year}'].loc[::-1]
         return dash_table.DataTable(
             style_table={'overflowX': 'auto'},
             style_cell={
@@ -97,7 +101,7 @@ def submit_loot(clicks, lootlog, charSelect):
                 'minWidth': '20px', 'width': '50', 'maxWidth': '70px',
                 'whiteSpace': 'normal',
             },
-            data = looted.to_dict('records'),
+            data =   loot_show.to_dict('records'),
             columns = [{"name": i, "id": i} for i in looted.columns],
         )
     elif clicks > 0:
