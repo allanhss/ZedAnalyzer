@@ -3,7 +3,7 @@ from dash import Dash, html, dcc, dash_table
 import plotly.express as px
 import pandas as pd
 from dash.dependencies import Input, Output, State
-from tibiaRegex import GetLootfBoss
+from tibiaRegex import GetLootfBoss, PutPriceInLootDf, OrderLootIndex, OrderLootByValue
 import datetime
 
 bosslog_csv = r'log\bosslog.csv'
@@ -84,8 +84,12 @@ def submit_loot(clicks, lootlog, charSelect):
     if str(lootlog) != 'None':
         looted = GetLootfBoss(lootlog,[charSelect, 0 ]) #Corrigir Bosspoints
         try:
-            loot = pd.concat ([pd.read_csv(bosslog_csv), looted])
+            loot = pd.concat ([pd.read_csv(bosslog_csv), looted], ignore_index=True)
+            print('Loot Loaded')
+            loot = PutPriceInLootDf(loot)
+            print('Loot Priced')
             loot.to_csv(bosslog_csv, index = False)
+            print('Loot Saved')
         except Exception as e:
             if 'file or directory' in e.args[1]:
                 looted.to_csv(bosslog_csv)
@@ -94,7 +98,12 @@ def submit_loot(clicks, lootlog, charSelect):
                 print(f'DfToCSV: {e.args}')
         
         time = datetime.datetime.now()
+        loot = pd.read_csv(bosslog_csv)
+        #Order the DataFrame by Item Value keeping the order sequence
         loot_show = loot[loot['Time'] == f'{time.day}/{time.month}/{time.year}'].loc[::-1]
+        print("Today's Loot Loaded")
+        loot_show = OrderLootByValue(loot_show)
+        print("Today's Loot Values Ordered")
         return dash_table.DataTable(
             style_table={'overflowX': 'auto'},
             style_cell={
